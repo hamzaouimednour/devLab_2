@@ -1,0 +1,32 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  DOCKER_IMAGE_NAME: registry.gitlab.com/<revoked-username>/devLab_2
+  DOCKER_REGISTRY_USER: <revoked-username>
+  DOCKER_REGISTRY_PASSWORD: <revoked-gitlab_token>
+
+before_script:
+  - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_REGISTRY_PASSWORD registry.gitlab.com
+
+build:
+  stage: build
+  script:
+    - docker build -t $DOCKER_IMAGE_NAME .
+    - docker push $DOCKER_IMAGE_NAME
+
+test:
+  stage: test
+  script:
+    - echo "[TESTS] Running tests..."
+
+deploy:
+  stage: deploy
+  only:
+    - master
+  script:
+    - echo "[PRODUCTION] Deploying ..."
+    - docker pull $DOCKER_IMAGE_NAME
+    - docker-compose -f docker-compose.yml up -d
